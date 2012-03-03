@@ -9,13 +9,18 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 public class NappkinActivity extends Activity {
 	
-	private FrameLayout mainView;
+	private RelativeLayout mainView;
+	private FrameLayout bubbleView;
+	private FrameLayout lineView;
 	private ArrayList<Bubble> listOfBubbles = new ArrayList<Bubble>();
 	private GestureDetector gestureDetector;
 	private Bubble selectedBubble;
+	
+	private int count = 0;
 	
     /** Called when the activity is first created. */
     @Override
@@ -25,7 +30,7 @@ public class NappkinActivity extends Activity {
         
         gestureDetector = new GestureDetector(new MyGestureDetector());
         
-        mainView = (FrameLayout) findViewById(R.id.bubbleCanvas);
+        mainView = (RelativeLayout) findViewById(R.id.mainCanvas);
         mainView.setOnTouchListener(new View.OnTouchListener() {
 			
 			@Override
@@ -33,6 +38,9 @@ public class NappkinActivity extends Activity {
 				return gestureDetector.onTouchEvent(event);
 			}
 		});
+        
+        bubbleView = (FrameLayout) findViewById(R.id.bubbleCanvas);
+        lineView = (FrameLayout) findViewById(R.id.lineCanvas);
     }
     
     class MyGestureDetector extends SimpleOnGestureListener {
@@ -56,19 +64,34 @@ public class NappkinActivity extends Activity {
 				if (b.contains(x,y)) {
 					boolean highlighted = b.select();
 					if (highlighted) {
-						if (selectedBubble != null) selectedBubble.select();
+						Bubble oldBubble = null;
+						if (selectedBubble != null) {
+							//Deselect previously selected bubble
+							oldBubble = selectedBubble;
+							oldBubble.select();
+						}
 						selectedBubble = b;
+						if (oldBubble != null) {
+							//If there was a previously selected bubble
+							Line line = new Line(getApplicationContext(), oldBubble,selectedBubble);
+							if (oldBubble.addConnection(selectedBubble)) {
+								lineView.addView(line);
+								selectedBubble.addConnection(oldBubble);
+							}
+						}
 					}
 					else {
+						//Previously highlighted bubble is deselected
 						selectedBubble = null;
 					}
 					selected = true;
 				}
 			}
 			if (!selected) {
-				Bubble c = new Bubble(getApplicationContext(), x, y);
-				mainView.addView(c);
-				listOfBubbles.add(c);
+				Bubble b = new Bubble(getApplicationContext(), x, y, count);
+				bubbleView.addView(b);
+				listOfBubbles.add(b);
+				count++;
 			}
 			return true;
 		}
