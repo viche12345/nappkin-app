@@ -19,8 +19,10 @@ public class Bubble extends View {
 	private RectF r;
 	private Paint mPaint;
 	private Paint shadowPaint;
+	private Paint strokePaint;
 	private RectF shadowR;
 	private int x,y;
+	private boolean selected = false;
 	
 	private LinearGradient gradient;
 
@@ -28,6 +30,10 @@ public class Bubble extends View {
 		super(context);
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		strokePaint.setColor(Color.rgb(25, 62, 147));
+		strokePaint.setStrokeWidth(2);
+	    strokePaint.setStyle(Paint.Style.STROKE);
 		shadowPaint.setMaskFilter(new BlurMaskFilter(5, Blur.NORMAL));
 		shadowPaint.setColor(Color.DKGRAY);
 		r = new RectF(x-(WIDTH/2), y-(HEIGHT/2), x+(WIDTH/2), y+(HEIGHT/2));
@@ -42,6 +48,22 @@ public class Bubble extends View {
 		y = y + shiftY;
 		invalidate();
 	}
+	
+	protected boolean select() {
+		if (!selected) {
+			strokePaint.setColor(Color.rgb(255, 96, 0));
+			strokePaint.setStrokeWidth(7);
+			invalidate();
+			selected = true;
+			return true;
+		} else {
+			strokePaint.setColor(Color.rgb(25, 62, 147));
+			strokePaint.setStrokeWidth(2);
+			invalidate();
+			selected = false;
+			return false;
+		}
+	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -52,6 +74,7 @@ public class Bubble extends View {
 		shadowR.set(x-(WIDTH/2), (y+10)-(HEIGHT/2), x+(WIDTH/2), (y+10)+(HEIGHT/2));
 		canvas.drawRoundRect(shadowR, 30, 30, shadowPaint);
 		canvas.drawRoundRect(r,30,30, mPaint);
+		canvas.drawRoundRect(r,30,30, strokePaint);
 	}
 	
 	protected boolean contains(int x, int y) {
