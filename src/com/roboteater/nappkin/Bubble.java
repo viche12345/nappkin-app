@@ -1,5 +1,8 @@
 package com.roboteater.nappkin;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import android.content.Context;
 import android.graphics.BlurMaskFilter;
 import android.graphics.BlurMaskFilter.Blur;
@@ -16,17 +19,20 @@ public class Bubble extends View {
 	private final int WIDTH=200;
 	private final int HEIGHT=60;
 	
+	private int id;
+	private Set<Integer> connectedBubbles = new TreeSet<Integer>();
+	
 	private RectF r;
 	private Paint mPaint;
 	private Paint shadowPaint;
 	private Paint strokePaint;
 	private RectF shadowR;
-	private int x,y;
+	protected int x,y,startingX,startingY;
 	private boolean selected = false;
 	
 	private LinearGradient gradient;
 
-	public Bubble(Context context, int x, int y) {
+	public Bubble(Context context, int x, int y, int id) {
 		super(context);
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -39,17 +45,27 @@ public class Bubble extends View {
 		r = new RectF(x-(WIDTH/2), y-(HEIGHT/2), x+(WIDTH/2), y+(HEIGHT/2));
 		shadowR = new RectF(r);
 		
+		startingX = x;
+		startingY = y;
 		this.x = x;
 		this.y = y;
+		
+		this.id = id;
 	}
 	
-	protected void shift(int shiftX, int shiftY) {
+	public void shift(int shiftX, int shiftY) {
 		x = x + shiftX;
 		y = y + shiftY;
 		invalidate();
 	}
 	
-	protected boolean select() {
+	public void reset() {
+		x = startingX;
+		y = startingY;
+		invalidate();
+	}
+	
+	public boolean select() {
 		if (!selected) {
 			strokePaint.setColor(Color.rgb(255, 96, 0));
 			strokePaint.setStrokeWidth(7);
@@ -77,8 +93,16 @@ public class Bubble extends View {
 		canvas.drawRoundRect(r,30,30, strokePaint);
 	}
 	
-	protected boolean contains(int x, int y) {
+	public boolean contains(int x, int y) {
 		return r.contains(x, y);
+	}
+
+	public int getId() {
+		return id;
+	}
+	
+	public boolean addConnection(Bubble b) {
+		return connectedBubbles.add(b.id);
 	}
 
 }
