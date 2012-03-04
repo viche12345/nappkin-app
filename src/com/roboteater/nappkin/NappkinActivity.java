@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -16,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -51,6 +53,19 @@ public class NappkinActivity extends Activity {
         
         bubbleView = (FrameLayout) findViewById(R.id.bubbleCanvas);
         lineView = (FrameLayout) findViewById(R.id.lineCanvas);
+        
+        Button forwardButton = (Button) findViewById(R.id.list);
+        forwardButton.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View arg0)
+			{
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(arg0.getContext(), ListButton.class);
+				startActivityForResult(intent, intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+			}
+		});
     }
     
     @Override

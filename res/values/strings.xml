@@ -3,8 +3,15 @@
 
     <string name="hello">Hello World, NappkinActivity!</string>
     <string name="app_name">Nappkin</string>
+
     <string name="text_contents">Text contents:</string>
     <string name="menu_edit">EDIT</string>
     <string name="menu_delete">DELETE</string>
+    
+        <!-- mine  -->
+    <string name="button_txt">Button</string>
+    <string name="newbutton">+</string>
+    <string name="button">New button</string>
+    <string name="list">-></string>
 
 </resources>
