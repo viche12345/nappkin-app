@@ -3,13 +3,23 @@ package com.roboteater.nappkin;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 public class NappkinActivity extends Activity {
 	
@@ -43,7 +53,63 @@ public class NappkinActivity extends Activity {
         lineView = (FrameLayout) findViewById(R.id.lineCanvas);
     }
     
-    class MyGestureDetector extends SimpleOnGestureListener {
+    @Override
+	protected Dialog onCreateDialog(int id) {
+    	LayoutInflater factory = LayoutInflater.from(this);
+    	View dialogLayout = factory.inflate(R.layout.editbubble, null);
+    	final EditText et = (EditText) dialogLayout.findViewById(R.id.editText1);
+    	Log.d("Nappkin",selectedBubble.getText());
+    	et.setText(selectedBubble.getText());
+    	
+    	return new AlertDialog.Builder(this).setIconAttribute(android.R.attr.dialogIcon)
+    			.setTitle("Edit Idea")
+    			.setView(dialogLayout)
+    			.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (selectedBubble != null && selectedBubble.isSelected()) {
+							selectedBubble.select();
+						}
+						selectedBubble.setText(et.getText().toString());
+						selectedBubble = null;
+					}
+				})
+				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (selectedBubble != null && selectedBubble.isSelected()) {
+							selectedBubble.select();
+						}
+						selectedBubble = null;
+					}
+				}).create();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_edit:
+			if (selectedBubble != null) showDialog(selectedBubble.getId());
+			else Toast.makeText(this, "Click on an idea first!", Toast.LENGTH_LONG).show();
+			return true;
+		case R.id.menu_delete:
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+		
+	}
+
+	class MyGestureDetector extends SimpleOnGestureListener {
     	
     	boolean draggingBubble;
     	
@@ -88,10 +154,19 @@ public class NappkinActivity extends Activity {
 				}
 			}
 			if (!selected) {
+				if (selectedBubble != null) {
+					selectedBubble.select();
+					selectedBubble = null;
+					return true;
+				}
 				Bubble b = new Bubble(getApplicationContext(), x, y, count);
+				b.setText("New Idea");
 				bubbleView.addView(b);
 				listOfBubbles.add(b);
 				count++;
+				
+				selectedBubble=b;
+				showDialog(selectedBubble.getId());
 			}
 			return true;
 		}
