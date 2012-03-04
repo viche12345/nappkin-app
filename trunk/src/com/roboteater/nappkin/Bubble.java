@@ -32,6 +32,7 @@ public class Bubble extends View {
 	private Paint textPaint;
 	private RectF shadowR;
 	protected int x,y,startingX,startingY;
+	private int shiftX, shiftY;
 	private boolean selected = false;
 	
 	private LinearGradient gradient;
@@ -62,8 +63,10 @@ public class Bubble extends View {
 	}
 	
 	public void shift(int shiftX, int shiftY) {
-		x = x + shiftX;
-		y = y + shiftY;
+		this.shiftX += shiftX;
+		this.shiftY += shiftY;
+		x = startingX + this.shiftX;
+		y = startingY + this.shiftY;
 		invalidate();
 	}
 	
@@ -154,6 +157,11 @@ public class Bubble extends View {
 	
 	public boolean isSelected() {
 		return selected;
+	}
+	
+	public void updateStartingCoords(int x, int y) {
+		startingX = x;
+		startingY = y;
 	}
 
 }
