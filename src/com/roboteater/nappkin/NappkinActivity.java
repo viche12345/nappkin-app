@@ -16,7 +16,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -79,6 +78,7 @@ public class NappkinActivity extends Activity {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
+				if (event.getAction()==MotionEvent.ACTION_UP) sendMessage(map, "update");
 				return gestureDetector.onTouchEvent(event);
 			}
 		});
@@ -185,6 +185,9 @@ public class NappkinActivity extends Activity {
 		
 	}
 	
+	/*
+	 * A class to genericcly send messages
+	 */
 	private void sendMessage(JSONObject value, String action){
 		Message message = new Message();
 		JSONObject contents = new JSONObject();
