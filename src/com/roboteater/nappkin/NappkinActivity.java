@@ -3,14 +3,13 @@ package com.roboteater.nappkin;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.Intent;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -19,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -31,6 +31,7 @@ public class NappkinActivity extends Activity {
 	private FrameLayout bubbleView;
 	private FrameLayout lineView;
 	private ArrayList<Bubble> listOfBubbles = new ArrayList<Bubble>();
+	private ArrayList<Line> listOfLines = new ArrayList<Line>();
 	private GestureDetector gestureDetector;
 	private Bubble selectedBubble;
 	
@@ -80,15 +81,14 @@ public class NappkinActivity extends Activity {
     	registered = true;
 	}
 
-    @Override
+	@Override
 	protected Dialog onCreateDialog(int id) {
     	LayoutInflater factory = LayoutInflater.from(this);
     	View dialogLayout = factory.inflate(R.layout.editbubble, null);
     	final EditText et = (EditText) dialogLayout.findViewById(R.id.editText1);
-    	Log.d("Nappkin",selectedBubble.getText());
     	et.setText(selectedBubble.getText());
     	
-    	return new AlertDialog.Builder(this).setIconAttribute(android.R.attr.dialogIcon)
+    	Dialog dialog = new AlertDialog.Builder(this).setIconAttribute(android.R.attr.dialogIcon)
     			.setTitle("Edit Idea")
     			.setView(dialogLayout)
     			.setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -100,6 +100,7 @@ public class NappkinActivity extends Activity {
 						}
 						selectedBubble.setText(et.getText().toString());
 						selectedBubble = null;
+						dialog.cancel();
 					}
 				})
 				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -110,8 +111,21 @@ public class NappkinActivity extends Activity {
 							selectedBubble.select();
 						}
 						selectedBubble = null;
+						dialog.cancel();
 					}
-				}).create();
+				}).setCancelable(false).create();
+    	
+    	dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+			
+			@Override
+			public void onShow(DialogInterface dialog) {
+				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		        imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+		        et.selectAll();
+			}
+		});
+    	
+    	return dialog;
 	}
 
 	@Override
@@ -125,10 +139,26 @@ public class NappkinActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_edit:
-			if (selectedBubble != null) showDialog(selectedBubble.getId());
+			if (selectedBubble != null) showDialog(0);
 			else Toast.makeText(this, "Click on an idea first!", Toast.LENGTH_LONG).show();
 			return true;
 		case R.id.menu_delete:
+			if (selectedBubble != null) {
+				bubbleView.removeView(selectedBubble);
+				listOfBubbles.remove(selectedBubble);
+				ArrayList<Line> linesToRemove = new ArrayList<Line>();
+				for (Line line : listOfLines) {
+					if (line.getStartBubble().equals(selectedBubble) || line.getEndBubble().equals(selectedBubble)){
+						linesToRemove.add(line);
+						lineView.removeView(line);
+					}
+				}
+				for (Line pending : linesToRemove) {
+					listOfLines.remove(pending);
+				}
+				selectedBubble = null;
+			}
+			else Toast.makeText(this, "Click on an idea first!", Toast.LENGTH_LONG).show();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -169,6 +199,7 @@ public class NappkinActivity extends Activity {
 							Line line = new Line(getApplicationContext(), oldBubble,selectedBubble);
 							if (oldBubble.addConnection(selectedBubble)) {
 								lineView.addView(line);
+								listOfLines.add(line);
 								selectedBubble.addConnection(oldBubble);
 							}
 						}
@@ -193,7 +224,7 @@ public class NappkinActivity extends Activity {
 				count++;
 				
 				selectedBubble=b;
-				showDialog(selectedBubble.getId());
+				showDialog(0);
 			}
 			return true;
 		}
