@@ -1,6 +1,8 @@
 package com.roboteater.nappkin;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -10,6 +12,7 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -200,6 +203,41 @@ public class NappkinActivity extends Activity {
 		try {
 			chat.sendMessage(message);
 		} catch (XMPPException e) {}
+	}
+	public void updateMap(ArrayList<Bubble> bubbles, int id)
+	{
+		map = new JSONObject();
+		try{
+				map.put("id", id);
+				JSONArray  bubbleArray = new JSONArray();
+				for(int i = 0; i< bubbles.size(); i++)
+				{
+					Bubble nextBubble = bubbles.get(i);
+					JSONObject bubble = new JSONObject();
+					bubble.put("id",nextBubble.getId());
+					bubble.put("x", nextBubble.getStartingX());
+					bubble.put("y", nextBubble.getStartingY());
+					bubble.put("user", nextBubble.getUser());
+					bubble.put("text", nextBubble.getText());
+					JSONArray connected = new JSONArray();
+					Set<Integer> connectedBubbles = nextBubble.getConnected();
+					Iterator<Integer> it = connectedBubbles.iterator();
+					while(it.hasNext())
+					{
+						JSONObject connectedID = new JSONObject();
+						connectedID.put("id", it.next());
+						connected.put(connectedID);
+					}
+					bubble.put("connected", connected);
+					bubbleArray.put(bubble);
+				}
+				map.put("Bubbles", bubbleArray);
+			}
+		catch(JSONException e)
+		{
+			
+		}
+		
 	}
 	
 
