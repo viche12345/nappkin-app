@@ -2,6 +2,17 @@ package com.roboteater.nappkin;
 
 import java.util.ArrayList;
 
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.ChatManager;
+import org.jivesoftware.smack.Connection;
+import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -34,14 +45,32 @@ public class NappkinActivity extends Activity {
 	private ArrayList<Line> listOfLines = new ArrayList<Line>();
 	private GestureDetector gestureDetector;
 	private Bubble selectedBubble;
+	private JSONObject map;
 	
 	private int count = 0;
+	private Chat chat;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
+        Connection connection = new XMPPConnection(config);
+        try{
+        connection.connect();
+        connection.login("nappkinclient@jabber.org", "nutella", "Client");
+        ChatManager chatmanager = connection.getChatManager();
+        chat = chatmanager.createChat("nappkinserver@jabber.org", new MessageListener() {
+            public void processMessage(Chat chat, Message message) {
+            	 try {
+					map = new JSONObject(message.getBody());
+				} catch (JSONException e) {	}
+            }
+        });
+        }
+        catch(XMPPException e){}
         
         gestureDetector = new GestureDetector(new MyGestureDetector());
         
@@ -155,6 +184,21 @@ public class NappkinActivity extends Activity {
 		}
 		
 	}
+	
+	private void sendMessage(JSONObject value, String action){
+		Message message = new Message();
+		JSONObject contents = new JSONObject();
+		try {
+			contents.put("action", action);
+			contents.put("mindmap",map);//ADD JSON VAIRABLE FOR MAP HERE
+			contents.put("parameters", value);
+		} catch (JSONException e1) {		}
+		message.setBody(contents.toString());
+		try {
+			chat.sendMessage(message);
+		} catch (XMPPException e) {}
+	}
+	
 
 	class MyGestureDetector extends SimpleOnGestureListener {
     	
