@@ -8,7 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
-public class Line extends View implements Comparable<Line>{
+public class Line extends View{
 	
 	private Paint mPaint;
 	private Bubble startBubble,endBubble;
@@ -35,13 +35,6 @@ public class Line extends View implements Comparable<Line>{
 
 	public Bubble getEndBubble() {
 		return endBubble;
-	}
-
-	@Override
-	public int compareTo(Line another) {
-		if (another.getStartBubble() == this.getEndBubble() && another.getEndBubble() == this.getStartBubble())
-		return 0;
-		else return 1;
 	}
 	
 }
