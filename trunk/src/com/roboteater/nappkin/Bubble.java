@@ -23,6 +23,7 @@ public class Bubble extends View {
 	private int id;
 	private Set<Integer> connectedBubbles = new TreeSet<Integer>();
 	private String mText;
+	private String user;
 	
 	private RectF r;
 	private Paint mPaint;
@@ -135,7 +136,15 @@ public class Bubble extends View {
 	public String getText() {
 		return mText;
 	}
-
+	
+	public String getUser()
+	{
+		return user;
+	}
+	public Set<Integer> getConnected()
+	{
+		return connectedBubbles;
+	}
 	public void setText(String mText) {
 		this.mText = mText;
 		WIDTH = (int) textPaint.measureText(mText)+60;
