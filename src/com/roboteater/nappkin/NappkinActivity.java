@@ -3,6 +3,8 @@ package com.roboteater.nappkin;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -33,12 +35,15 @@ public class NappkinActivity extends Activity {
 	private Bubble selectedBubble;
 	
 	private int count = 0;
+	boolean registered = true;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        if(!registered)
+        	register();
         
         gestureDetector = new GestureDetector(new MyGestureDetector());
         
@@ -68,6 +73,14 @@ public class NappkinActivity extends Activity {
 		});
     }
     
+    private void register() {
+    	Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
+    	registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0));
+    	registrationIntent.putExtra("sender", "qasidsadiq@gmail.com");
+    	this.startService(registrationIntent);
+    	registered = true;
+	}
+
     @Override
 	protected Dialog onCreateDialog(int id) {
     	LayoutInflater factory = LayoutInflater.from(this);
