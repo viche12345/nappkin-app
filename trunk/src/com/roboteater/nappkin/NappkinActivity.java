@@ -66,9 +66,8 @@ public class NappkinActivity extends Activity {
 			@Override
 			public void onClick(View arg0)
 			{
-				// TODO Auto-generated method stub
 				Intent intent = new Intent(arg0.getContext(), ListButton.class);
-				startActivityForResult(intent, intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+				startActivityForResult(intent, 0);
 			}
 		});
     }

@@ -15,8 +15,8 @@ public class ListButton extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 		
-        Button newButton = (Button) findViewById(R.id.NewButton);
-        createButton();
+//        Button newButton = (Button) findViewById(R.id.NewButton);
+		createButton();
 //		newButton.setOnClickListener(new View.OnClickListener()
 //		{
 //			public void onClick(View arg0)
@@ -26,7 +26,7 @@ public class ListButton extends Activity
 //		});		
 	}
 
-	public Button createButton()
+	public void createButton()
 	{
 		Button start = (Button) findViewById(R.id.Button01);
 		
@@ -36,11 +36,11 @@ public class ListButton extends Activity
 			{
 				
 				Intent myIntent = new Intent(arg0.getContext(), NappkinActivity.class);
-				startActivityForResult(myIntent, myIntent.FLAG_ACTIVITY_CLEAR_TOP);		
+				startActivityForResult(myIntent, 0);
 			}
 		});	
 		
-		return start;
+		
 	}
 
 }
