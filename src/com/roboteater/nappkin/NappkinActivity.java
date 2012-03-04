@@ -1,6 +1,7 @@
 package com.roboteater.nappkin;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -50,6 +51,7 @@ public class NappkinActivity extends Activity {
 	private JSONObject map;
 	
 	private int count = 0;
+	private Random gen = new Random();
 	private Chat chat;
 	
     /** Called when the activity is first created. */
@@ -292,11 +294,11 @@ public class NappkinActivity extends Activity {
 					selectedBubble = null;
 					return true;
 				}
+				count = gen.nextInt(Integer.MAX_VALUE);
 				Bubble b = new Bubble(getApplicationContext(), x, y, count);
 				b.setText("New Idea");
 				bubbleView.addView(b);
 				listOfBubbles.add(b);
-				count++;
 				
 				selectedBubble=b;
 				showDialog(0);
