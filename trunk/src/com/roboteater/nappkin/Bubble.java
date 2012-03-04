@@ -112,7 +112,26 @@ public class Bubble extends View {
 	public boolean addConnection(Bubble b) {
 		return connectedBubbles.add(b.id);
 	}
+	
+	public int getBubbleX()
+	{
+		return x;
+	}
+	
+	public int getBubbleY()
+	{
+		return y;
+	}
 
+	public int getStartingX()
+	{
+		return startingX;
+	}
+	public int getStartingY()
+	{
+		return startingY;
+	}
+	
 	public String getText() {
 		return mText;
 	}
