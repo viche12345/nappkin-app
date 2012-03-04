@@ -1,7 +1,5 @@
 package com.roboteater.nappkin;
 
-import java.util.Random;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,14 +10,13 @@ public class Line extends View{
 	
 	private Paint mPaint;
 	private Bubble startBubble,endBubble;
-	private static Random gen = new Random();
 	
 	public Line(Context context, Bubble startBubble, Bubble endBubble) {
 		super(context);
 		this.startBubble = startBubble;
 		this.endBubble = endBubble;
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		mPaint.setColor(Color.rgb(gen.nextInt(255), gen.nextInt(255), gen.nextInt(255)));
+		mPaint.setColor(Color.DKGRAY);
 		mPaint.setStrokeWidth(5);
 	}
 
