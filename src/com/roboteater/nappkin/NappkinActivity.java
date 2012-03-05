@@ -181,19 +181,7 @@ public class NappkinActivity extends Activity {
 	/*
 	 * A class to genericcly send messages
 	 */
-	private void sendMessage(JSONObject value, String action){
-		Message message = new Message();
-		JSONObject contents = new JSONObject();
-		try {
-			contents.put("action", action);
-			contents.put("mindmap",map);//ADD JSON VAIRABLE FOR MAP HERE
-			contents.put("parameters", value);
-		} catch (JSONException e1) {		}
-		message.setBody(contents.toString());
-		try {
-			chat.sendMessage(message);
-		} catch (XMPPException e) {}
-	}
+	
 	public void updateMap(ArrayList<Bubble> bubbles, int id)
 	{
 		map = new JSONObject();
@@ -229,6 +217,28 @@ public class NappkinActivity extends Activity {
 		}
 		
 	}
+	
+	class Update extends AsyncTask{
+
+		@Override
+		protected Object doInBackground(Object... params) {
+				Message message = new Message();
+				JSONObject contents = new JSONObject();
+				try {
+					contents.put("action", params[1]);
+					contents.put("mindmap",map);//ADD JSON VAIRABLE FOR MAP HERE
+					contents.put("parameters", params[0]);
+				} catch (JSONException e1) {		}
+				message.setBody(contents.toString());
+				try {
+					chat.sendMessage(message);
+				} catch (XMPPException e) {}
+				return null;
+			
+		}
+		
+	}
+	
 	class Connect extends AsyncTask{
 
 		@Override
