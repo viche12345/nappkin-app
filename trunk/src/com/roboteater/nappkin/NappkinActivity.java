@@ -252,12 +252,7 @@ public class NappkinActivity extends Activity {
 			 ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
 		        Connection connection = new XMPPConnection(config);
 		        try{
-		        connection.connect();
-		        if(!registered){
-		        	username = "nappkinclient" + Math.random() + "@jabber.org";
-		        	password = "nutella";
-		        	connection.getAccountManager().createAccount(username,password);
-		        } 	
+		        connection.connect();	
 		        connection.login(username, password, "Client");
 		        ChatManager chatmanager = connection.getChatManager();
 		        chat = chatmanager.createChat("nappkinserver@jabber.org", new MessageListener() {
