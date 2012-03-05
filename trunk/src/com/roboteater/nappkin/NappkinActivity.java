@@ -12,12 +12,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -205,16 +209,35 @@ public class NappkinActivity extends Activity {
 		new Connect().execute();
 	}
 
+	public String getLocalIpAddress() {
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ipAddress = wifiInfo.getIpAddress();
 
+        return String.format("%d.%d.%d.%d",
+                (ipAddress & 0xff),
+                (ipAddress >> 8 & 0xff),
+                (ipAddress >> 16 & 0xff),
+                (ipAddress >> 24 & 0xff));
+    }
 	/*
 	 * A class to genericcly send messages
 	 */
 	public void updateMap(ArrayList<Bubble> bubbles, int id)
 	{
 		map = new JSONObject();
+		String possibleEmail = "";
+	       Account[] accounts = AccountManager.get(this).getAccounts();
+	       for (Account account : accounts) {
+	         if (account.name.contains("@")) {
+	             possibleEmail = account.name;
+	         }
+	       }
 		try{
 				map.put("id", id);
 				map.put("name", bubbles.get(0).getText());
+				map.put("email", possibleEmail);
+				map.put("ip", getLocalIpAddress());
 				JSONArray  bubbleArray = new JSONArray();
 				for(int i = 0; i< bubbles.size(); i++)
 				{
