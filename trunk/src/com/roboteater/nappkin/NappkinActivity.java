@@ -70,8 +70,8 @@ public class NappkinActivity extends Activity {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if (event.getAction()==MotionEvent.ACTION_UP) 
-					sendMessage(null, "update");
+//				if (event.getAction()==MotionEvent.ACTION_UP) 
+//					sendMessage(null, "update");
 				return gestureDetector.onTouchEvent(event);
 			}
 		});
