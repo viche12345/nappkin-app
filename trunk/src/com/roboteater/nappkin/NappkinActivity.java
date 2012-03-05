@@ -1,18 +1,14 @@
 package com.roboteater.nappkin;
 
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
 import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.ChatManager;
-import org.jivesoftware.smack.Connection;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.MessageListener;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,6 +21,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -39,6 +37,9 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import com.illposed.osc.OSCMessage;
+import com.illposed.osc.OSCPortOut;
 
 public class NappkinActivity extends Activity {
 	
@@ -59,13 +60,21 @@ public class NappkinActivity extends Activity {
 	public String password;
 	boolean registered = false;
 	
+	private int mapId = 0;
+	
+	private boolean updatingBubble;
+	
+	private OSCPortOut sender = null;
+	private Object args[] = new Object[1];
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
-       new Connect().execute();
+        StrictMode.ThreadPolicy policy = new StrictMode.
+        		ThreadPolicy.Builder().permitAll().build();
+        		StrictMode.setThreadPolicy(policy);
         
         gestureDetector = new GestureDetector(new MyGestureDetector());
         
@@ -75,8 +84,10 @@ public class NappkinActivity extends Activity {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 
-				if (event.getAction()==MotionEvent.ACTION_UP)
+				if (updatingBubble && event.getAction()==MotionEvent.ACTION_UP) {
 					new Update().execute(null, "update");
+					updatingBubble = false;
+				}
 				return gestureDetector.onTouchEvent(event);
 			}
 		});
@@ -95,6 +106,8 @@ public class NappkinActivity extends Activity {
 				startActivityForResult(intent, 0);
 			}
 		});
+        
+        mapId = gen.nextInt(Integer.MAX_VALUE);
     }
    
 
@@ -103,7 +116,7 @@ public class NappkinActivity extends Activity {
     	LayoutInflater factory = LayoutInflater.from(this);
     	View dialogLayout = factory.inflate(R.layout.editbubble, null);
     	final EditText et = (EditText) dialogLayout.findViewById(R.id.editText1);
-    	et.setText(selectedBubble.getText());
+    	et.setText((selectedBubble != null) ? "New Idea" : selectedBubble.getText());
     	
     	Dialog dialog = new AlertDialog.Builder(this).setIconAttribute(android.R.attr.dialogIcon)
     			.setTitle("Edit Idea")
@@ -117,6 +130,7 @@ public class NappkinActivity extends Activity {
 						}
 						selectedBubble.setText(et.getText().toString());
 						selectedBubble = null;
+						new Update().execute(null, "update");
 						dialog.cancel();
 					}
 				})
@@ -173,6 +187,7 @@ public class NappkinActivity extends Activity {
 				for (Line pending : linesToRemove) {
 					listOfLines.remove(pending);
 				}
+				new Update().execute(null, "update");
 				selectedBubble = null;
 			}
 			else Toast.makeText(this, "Click on an idea first!", Toast.LENGTH_LONG).show();
@@ -183,10 +198,23 @@ public class NappkinActivity extends Activity {
 		
 	}
 	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		sender.close();
+	}
+
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		new Connect().execute();
+	}
+
+
 	/*
 	 * A class to genericcly send messages
 	 */
-	
 	public void updateMap(ArrayList<Bubble> bubbles, int id)
 	{
 		map = new JSONObject();
@@ -224,46 +252,45 @@ public class NappkinActivity extends Activity {
 		
 	}
 	
-	class Update extends AsyncTask{
+	class Update extends AsyncTask<String,Void,Void>{
 
 		@Override
-		protected Object doInBackground(Object... params) {
-				Message message = new Message();
+		protected Void doInBackground(String... params) {
+			updateMap(listOfBubbles, mapId);
 				JSONObject contents = new JSONObject();
 				try {
 					contents.put("action", params[1]);
-					contents.put("mindmap",map);
+					contents.put("mindmap",map.toString());
 					contents.put("parameters", params[0]);
-				} catch (JSONException e1) {		}
-				message.setBody(contents.toString());
+				} catch (JSONException e1) {
+					e1.printStackTrace();
+				}
+				args[0] = contents.toString();
+				OSCMessage msg = new OSCMessage("/nappkin", args);
 				try {
-					chat.sendMessage(message);
-				} catch (XMPPException e) {}
+					sender.send(msg);
+					Log.d("Nappkin",(String) args[0]);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				return null;
 			
 		}
 		
 	}
 	
-	class Connect extends AsyncTask{
+	class Connect extends AsyncTask<Void,Void,Void>{
 
 		@Override
-		protected Object doInBackground(Object... arg0) {
-			 ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
-		        Connection connection = new XMPPConnection(config);
-		        try{
-		        connection.connect();	
-		        connection.login(username, password, "Client");
-		        ChatManager chatmanager = connection.getChatManager();
-		        chat = chatmanager.createChat("nappkinserver@jabber.org", new MessageListener() {
-		            public void processMessage(Chat chat, Message message) {
-		            	 try {
-							map = new JSONObject(message.getBody());
-						} catch (JSONException e) {	}
-		            }
-		        });
-		        }
-		        catch(XMPPException e){}
+		protected Void doInBackground(Void... arg0) {
+			try {
+				sender = new OSCPortOut(InetAddress.getByName("team8.appjam.roboteater.com"));
+			} catch (UnknownHostException e1) {
+				e1.printStackTrace();
+			} catch (SocketException e1) {
+				e1.printStackTrace();
+			}
+			
 			return null;
 		}
 		
@@ -298,12 +325,13 @@ public class NappkinActivity extends Activity {
 						}
 						selectedBubble = b;
 						if (oldBubble != null) {
-							//If there was a previously selected bubble
+							//If there was a previously selected bubble, connect bubbles!
 							Line line = new Line(getApplicationContext(), oldBubble,selectedBubble);
 							if (oldBubble.addConnection(selectedBubble)) {
 								lineView.addView(line);
 								listOfLines.add(line);
 								selectedBubble.addConnection(oldBubble);
+								new Update().execute(null, "update");
 							}
 						}
 					}
@@ -316,10 +344,13 @@ public class NappkinActivity extends Activity {
 			}
 			if (!selected) {
 				if (selectedBubble != null) {
+					//User clicked whitespace that will just deselect the bubble
 					selectedBubble.select();
 					selectedBubble = null;
 					return true;
 				}
+				//Here, user clicked whitespace but no bubble was selected before so
+				//create a new one!
 				count = gen.nextInt(Integer.MAX_VALUE);
 				Bubble b = new Bubble(getApplicationContext(), x, y, count);
 				b.setText("New Idea");
@@ -327,6 +358,7 @@ public class NappkinActivity extends Activity {
 				listOfBubbles.add(b);
 				
 				selectedBubble=b;
+				new Update().execute(null, "update");
 				showDialog(0);
 			}
 			return true;
@@ -335,7 +367,10 @@ public class NappkinActivity extends Activity {
 		@Override
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
-			if (draggingBubble) selectedBubble.shift((int)-distanceX, (int)-distanceY);
+			if (draggingBubble) {
+				updatingBubble = true;
+				selectedBubble.shift((int)-distanceX, (int)-distanceY);
+			}
 			else {
 				for (Bubble circ : listOfBubbles) {
 					circ.shift((int)-distanceX, (int)-distanceY);
