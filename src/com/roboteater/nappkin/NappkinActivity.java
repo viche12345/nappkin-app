@@ -218,7 +218,7 @@ public class NappkinActivity extends Activity {
 		map = new JSONObject();
 		try{
 				map.put("id", id);
-				map.put("name", null);
+				map.put("name", bubbles.get(0).getText());
 				JSONArray  bubbleArray = new JSONArray();
 				for(int i = 0; i< bubbles.size(); i++)
 				{
