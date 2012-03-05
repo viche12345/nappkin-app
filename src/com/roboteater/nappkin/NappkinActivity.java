@@ -1,8 +1,8 @@
 package com.roboteater.nappkin;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Set;
 
 import org.jivesoftware.smack.Chat;
