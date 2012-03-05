@@ -110,6 +110,7 @@ public class NappkinActivity extends Activity {
 		});
         
         mapId = gen.nextInt(Integer.MAX_VALUE);
+        new Update().execute(null, "newmap");
     }
    
 
@@ -231,19 +232,10 @@ public class NappkinActivity extends Activity {
 	 */
 	public void updateMap(ArrayList<Bubble> bubbles, int id)
 	{
-		map = new JSONObject();
-		String possibleEmail = "";
-	       Account[] accounts = AccountManager.get(this).getAccounts();
-	       for (Account account : accounts) {
-	         if (account.name.contains("@")) {
-	             possibleEmail = account.name;
-	         }
-	       }
 		try{
 				map.put("id", id);
 				if (bubbles.size() > 0) map.put("name", bubbles.get(0).getText());
-				map.put("email", possibleEmail);
-				map.put("ip", getLocalIpAddress());
+				
 				JSONArray  bubbleArray = new JSONArray();
 				for(int i = 0; i< bubbles.size(); i++)
 				{
@@ -279,12 +271,23 @@ public class NappkinActivity extends Activity {
 
 		@Override
 		protected Void doInBackground(String... params) {
+			map = new JSONObject();
+			String possibleEmail = "";
+		       Account[] accounts = AccountManager.get(NappkinActivity.this).getAccounts();
+		       for (Account account : accounts) {
+		         if (account.name.contains("@")) {
+		             possibleEmail = account.name;
+		         }
+		       }
+			
 			updateMap(listOfBubbles, mapId);
 				JSONObject contents = new JSONObject();
 				try {
 					contents.put("action", params[1]);
 					contents.put("mindmap",map.toString());
 					contents.put("parameters", params[0]);
+					contents.put("email", possibleEmail);
+					contents.put("ip", getLocalIpAddress());
 				} catch (JSONException e1) {
 					e1.printStackTrace();
 				}
