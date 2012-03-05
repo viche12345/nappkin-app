@@ -147,6 +147,13 @@ public class Bubble extends View {
 	{
 		return connectedBubbles;
 	}
+	public void setUser(String u)
+	{
+		user = u;
+	}public void setConnected(Set<Integer> s)
+	{
+		connectedBubbles = s;
+	}
 	public void setText(String mText) {
 		this.mText = mText;
 		WIDTH = (int) textPaint.measureText(mText)+60;
