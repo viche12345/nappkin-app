@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
+
+//import net.sf.json.JSONSerializer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -286,8 +289,10 @@ public class NappkinActivity extends Activity {
 					contents.put("action", params[1]);
 					contents.put("mindmap",map.toString());
 					contents.put("parameters", params[0]);
+
 					contents.put("email", possibleEmail);
 					contents.put("ip", getLocalIpAddress());
+
 				} catch (JSONException e1) {
 					e1.printStackTrace();
 				}
@@ -320,7 +325,114 @@ public class NappkinActivity extends Activity {
 			
 			OSCListener listener = new OSCListener() {
 				public void acceptMessage(java.util.Date time, OSCMessage message) {
-					System.out.println((String)message.getArguments()[0]);
+					
+					JSONObject map = null;
+					try {
+						map = new JSONObject((String) message.getArguments()[0]);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				    
+				       try {
+						String name = map.getString("name");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				       JSONArray bubbleArray = null;
+					try {
+						bubbleArray = map.getJSONArray("bubbles");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				       listOfBubbles.clear();
+
+				       for(int i = 0; i<bubbleArray.length(); i++)
+				       {
+
+
+				    	   JSONObject jb = null;
+						try {
+							jb = (JSONObject) bubbleArray.get(i);
+						} catch (JSONException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+				    	   int bubID= -1;
+						try {
+							bubID = jb.getInt("id");
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+				    	   int x = -1;
+						try {
+							x = (jb.getInt("x"));
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+				    	   int y = -1;
+						try {
+							y = jb.getInt("y");
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+				    	   Bubble b = new Bubble(getApplicationContext(), x, y, bubID);
+
+				    	   try {
+							b.setUser((String) jb.get("user"));
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+				    	   try {
+							b.setText((String) jb.get("text"));
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+				    	   Set<Integer> connected = new TreeSet<Integer>();
+
+
+				    	   JSONArray conn = null;
+						try {
+							conn = jb.getJSONArray("connected");
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+				    	   for(int j = 0; j<conn.length(); j++)
+
+				    	   {
+
+				               int connid = 0;
+							try {
+								connid = ((JSONObject)(conn.get(j))).getInt("id");
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+				               connected.add(connid);
+
+				    	   }
+
+				    	   b.setConnected(connected);
+
+				    	   listOfBubbles.add(b);
+
+				       }
 				}
 			};
 			receiver.addListener("/nappkinResponse", listener);
