@@ -51,6 +51,7 @@ public class NappkinActivity extends Activity {
 	private Bubble selectedBubble;
 	public JSONObject map;
 	
+	
 	private int count = 0;
 	private Random gen = new Random();
 	public Chat chat;
@@ -188,6 +189,7 @@ public class NappkinActivity extends Activity {
 		map = new JSONObject();
 		try{
 				map.put("id", id);
+				map.put("name", null);
 				JSONArray  bubbleArray = new JSONArray();
 				for(int i = 0; i< bubbles.size(); i++)
 				{
