@@ -15,15 +15,7 @@ public class ListButton extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 		
-//        Button newButton = (Button) findViewById(R.id.NewButton);
 		createButton();
-//		newButton.setOnClickListener(new View.OnClickListener()
-//		{
-//			public void onClick(View arg0)
-//			{
-//				Button newButton = createButton();
-//			}
-//		});		
 	}
 
 	public void createButton()

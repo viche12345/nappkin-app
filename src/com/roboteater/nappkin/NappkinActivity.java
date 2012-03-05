@@ -107,7 +107,7 @@ public class NappkinActivity extends Activity {
 			@Override
 			public void onClick(View arg0)
 			{
-				Intent intent = new Intent(arg0.getContext(), ListButton.class);
+				Intent intent = new Intent(arg0.getContext(), ListMaps.class);
 				startActivityForResult(intent, 0);
 			}
 		});
