@@ -55,6 +55,9 @@ public class NappkinActivity extends Activity {
 	private int count = 0;
 	private Random gen = new Random();
 	public Chat chat;
+	public String username;
+	public String password;
+	boolean registered = false;
 	
     /** Called when the activity is first created. */
     @Override
@@ -229,7 +232,7 @@ public class NappkinActivity extends Activity {
 				JSONObject contents = new JSONObject();
 				try {
 					contents.put("action", params[1]);
-					contents.put("mindmap",map);//ADD JSON VAIRABLE FOR MAP HERE
+					contents.put("mindmap",map);
 					contents.put("parameters", params[0]);
 				} catch (JSONException e1) {		}
 				message.setBody(contents.toString());
@@ -250,7 +253,12 @@ public class NappkinActivity extends Activity {
 		        Connection connection = new XMPPConnection(config);
 		        try{
 		        connection.connect();
-		        connection.login("nappkinclient@jabber.org", "nutella", "Client");
+		        if(!registered){
+		        	username = "nappkinclient" + Math.random() + "@jabber.org";
+		        	password = "nutella";
+		        	connection.getAccountManager().createAccount(username,password);
+		        } 	
+		        connection.login(username, password, "Client");
 		        ChatManager chatmanager = connection.getChatManager();
 		        chat = chatmanager.createChat("nappkinserver@jabber.org", new MessageListener() {
 		            public void processMessage(Chat chat, Message message) {
