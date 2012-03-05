@@ -40,7 +40,10 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.illposed.osc.OSCListener;
 import com.illposed.osc.OSCMessage;
+import com.illposed.osc.OSCPort;
+import com.illposed.osc.OSCPortIn;
 import com.illposed.osc.OSCPortOut;
 
 public class NappkinActivity extends Activity {
@@ -66,6 +69,7 @@ public class NappkinActivity extends Activity {
 	private boolean updatingBubble;
 	
 	private OSCPortOut sender = null;
+	private OSCPortIn receiver = null;
 	private Object args[] = new Object[1];
 	
     /** Called when the activity is first created. */
@@ -200,6 +204,8 @@ public class NappkinActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		sender.close();
+		receiver.stopListening();
+		receiver.close();
 	}
 
 
@@ -235,7 +241,7 @@ public class NappkinActivity extends Activity {
 	       }
 		try{
 				map.put("id", id);
-				map.put("name", bubbles.get(0).getText());
+				if (bubbles.size() > 0) map.put("name", bubbles.get(0).getText());
 				map.put("email", possibleEmail);
 				map.put("ip", getLocalIpAddress());
 				JSONArray  bubbleArray = new JSONArray();
@@ -302,11 +308,20 @@ public class NappkinActivity extends Activity {
 		protected Void doInBackground(Void... arg0) {
 			try {
 				sender = new OSCPortOut(InetAddress.getByName("team8.appjam.roboteater.com"));
+				receiver = new OSCPortIn(OSCPort.defaultSCOSCPort()+5);
 			} catch (UnknownHostException e1) {
 				e1.printStackTrace();
 			} catch (SocketException e1) {
 				e1.printStackTrace();
 			}
+			
+			OSCListener listener = new OSCListener() {
+				public void acceptMessage(java.util.Date time, OSCMessage message) {
+					System.out.println((String)message.getArguments()[0]);
+				}
+			};
+			receiver.addListener("/nappkinResponse", listener);
+			receiver.startListening();
 			
 			return null;
 		}
