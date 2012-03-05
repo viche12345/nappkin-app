@@ -23,6 +23,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -60,21 +61,7 @@ public class NappkinActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
-        Connection connection = new XMPPConnection(config);
-        try{
-        connection.connect();
-        connection.login("nappkinclient@jabber.org", "nutella", "Client");
-        ChatManager chatmanager = connection.getChatManager();
-        chat = chatmanager.createChat("nappkinserver@jabber.org", new MessageListener() {
-            public void processMessage(Chat chat, Message message) {
-            	 try {
-					map = new JSONObject(message.getBody());
-				} catch (JSONException e) {	}
-            }
-        });
-        }
-        catch(XMPPException e){}
+       new Connect().execute();
         
         gestureDetector = new GestureDetector(new MyGestureDetector());
         
@@ -83,7 +70,8 @@ public class NappkinActivity extends Activity {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if (event.getAction()==MotionEvent.ACTION_UP) sendMessage(map, "update");
+				if (event.getAction()==MotionEvent.ACTION_UP) 
+					sendMessage(null, "update");
 				return gestureDetector.onTouchEvent(event);
 			}
 		});
@@ -241,7 +229,29 @@ public class NappkinActivity extends Activity {
 		}
 		
 	}
-	
+	class Connect extends AsyncTask{
+
+		@Override
+		protected Object doInBackground(Object... arg0) {
+			 ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
+		        Connection connection = new XMPPConnection(config);
+		        try{
+		        connection.connect();
+		        connection.login("nappkinclient@jabber.org", "nutella", "Client");
+		        ChatManager chatmanager = connection.getChatManager();
+		        chat = chatmanager.createChat("nappkinserver@jabber.org", new MessageListener() {
+		            public void processMessage(Chat chat, Message message) {
+		            	 try {
+							map = new JSONObject(message.getBody());
+						} catch (JSONException e) {	}
+		            }
+		        });
+		        }
+		        catch(XMPPException e){}
+			return null;
+		}
+		
+	}
 
 	class MyGestureDetector extends SimpleOnGestureListener {
     	
