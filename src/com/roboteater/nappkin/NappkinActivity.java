@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
-import org.jivesoftware.smack.Chat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +54,6 @@ public class NappkinActivity extends Activity {
 	
 	private int count = 0;
 	private Random gen = new Random();
-	public Chat chat;
 	public String username;
 	public String password;
 	boolean registered = false;
