@@ -49,11 +49,11 @@ public class NappkinActivity extends Activity {
 	private ArrayList<Line> listOfLines = new ArrayList<Line>();
 	private GestureDetector gestureDetector;
 	private Bubble selectedBubble;
-	private JSONObject map;
+	public JSONObject map;
 	
 	private int count = 0;
 	private Random gen = new Random();
-	private Chat chat;
+	public Chat chat;
 	
     /** Called when the activity is first created. */
     @Override
@@ -70,6 +70,7 @@ public class NappkinActivity extends Activity {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
+
 				if (event.getAction()==MotionEvent.ACTION_UP)
 					new Update().execute(null, "update");
 				return gestureDetector.onTouchEvent(event);
