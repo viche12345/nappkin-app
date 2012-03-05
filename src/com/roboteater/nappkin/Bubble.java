@@ -12,7 +12,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.util.Log;
 import android.view.View;
 
 public class Bubble extends View {
@@ -151,7 +150,6 @@ public class Bubble extends View {
 	public void setText(String mText) {
 		this.mText = mText;
 		WIDTH = (int) textPaint.measureText(mText)+60;
-		Log.d("Nappkin", WIDTH+"");
 		invalidate();
 	}
 	
