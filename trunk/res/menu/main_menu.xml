@@ -8,4 +8,12 @@
           android:icon="@android:drawable/ic_menu_delete"
           android:title="@string/menu_delete"
           android:showAsAction="ifRoom|withText" />
+    <item android:id="@+id/menu_share"
+          android:icon="@android:drawable/ic_menu_share"
+          android:title="@string/menu_share"
+          android:showAsAction="ifRoom|withText" />
+    <item android:id="@+id/menu_more"
+          android:icon="@android:drawable/ic_media_play"
+          android:title="@string/menu_more"
+          android:showAsAction="ifRoom|withText" />
 </menu>

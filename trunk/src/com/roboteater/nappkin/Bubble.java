@@ -70,9 +70,8 @@ public class Bubble extends View {
 	}
 	
 	public void reset() {
-		x = startingX;
-		y = startingY;
-		invalidate();
+		shiftX = 0;
+		shiftY = 0;
 	}
 	
 	public boolean select() {
@@ -164,9 +163,15 @@ public class Bubble extends View {
 		return selected;
 	}
 	
-	public void updateStartingCoords(int x, int y) {
-		startingX = x;
-		startingY = y;
+	public void updateStartingCoords(int shiftX, int shiftY) {
+		startingX += shiftX;
+		startingY += shiftY;
+		shift(0,0);
+	}
+
+	@Override
+	public String toString() {
+		return ""+id;
 	}
 
 }
