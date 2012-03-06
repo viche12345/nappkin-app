@@ -85,6 +85,9 @@ public class NappkinActivity extends Activity {
 	
 	private static URL conn = null;
 	
+	private int shiftX = 0;
+	private int shiftY = 0;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -377,12 +380,11 @@ public class NappkinActivity extends Activity {
 					Log.d("OSCMESSAGE",(String)message.getArguments()[0]);
 					try {
 						JSONObject rMap = new JSONObject((String)message.getArguments()[0]);
-						if(rMap.getString("id").equals(mapId)){
+						if(Integer.parseInt(rMap.getString("id")) == mapId){
 							convertJson((String)message.getArguments()[0],false);
 							runOnUiThread(new Drawer());
 						}
 					} catch (JSONException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -424,6 +426,15 @@ public class NappkinActivity extends Activity {
 		
 	}
 	
+	private Runnable resetView = new Runnable() {
+		
+		@Override
+		public void run() {
+			bubbleView.removeAllViews();
+			lineView.removeAllViews();
+		}
+	};
+	
 	private void convertJson(String json, boolean isArray) {
 		JSONArray obj = null;
 		if (isArray) {
@@ -464,6 +475,7 @@ public class NappkinActivity extends Activity {
 		}
 		listOfBubbles.clear();
 		listOfLines.clear();
+		runOnUiThread(resetView);
 		for (int i = 0; i < bubbleArray.length(); i++) {
 
 			JSONObject jb = null;
@@ -494,7 +506,7 @@ public class NappkinActivity extends Activity {
 				e.printStackTrace();
 			}
 
-			Bubble b = new Bubble(getApplicationContext(), x, y,
+			Bubble b = new Bubble(getApplicationContext(), x+shiftX, y+shiftY,
 					bubID);
 
 			try {
@@ -677,6 +689,8 @@ public class NappkinActivity extends Activity {
 				selectedBubble.updateStartingCoords((int)-distanceX, (int)-distanceY);
 			}
 			else {
+				shiftX += -distanceX;
+				shiftY += -distanceY;
 				for (Bubble circ : listOfBubbles) {
 					circ.shift((int)-distanceX, (int)-distanceY);
 				}
