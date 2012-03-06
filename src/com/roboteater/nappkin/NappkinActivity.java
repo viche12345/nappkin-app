@@ -326,7 +326,7 @@ public class NappkinActivity extends Activity {
 			OSCListener listener = new OSCListener() {
 				public void acceptMessage(java.util.Date time, OSCMessage message) {
 					
-					JSONObject map = null;
+				
 					try {
 						map = new JSONObject((String) message.getArguments()[0]);
 					} catch (JSONException e) {
@@ -334,6 +334,13 @@ public class NappkinActivity extends Activity {
 						e.printStackTrace();
 					}
 				    
+						try{
+							mapId = map.getInt("id");
+						}
+						catch(JSONException e)
+						{
+							e.printStackTrace();
+						}
 				       try {
 						String name = map.getString("name");
 						
