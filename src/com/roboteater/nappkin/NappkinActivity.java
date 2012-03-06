@@ -374,8 +374,16 @@ public class NappkinActivity extends Activity {
 			OSCListener listener = new OSCListener() {
 				public void acceptMessage(java.util.Date time,
 						OSCMessage message) {
-
-					
+					try {
+						JSONObject rMap = new JSONObject((String)message.getArguments()[0]);
+						if(rMap.getString("id").equals(mapId)){
+							convertJson((String)message.getArguments()[0],false);
+							runOnUiThread(new Drawer());
+						}
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			};
 			receiver.addListener("/nappkinResponse", listener);
@@ -386,17 +394,54 @@ public class NappkinActivity extends Activity {
 		
 	}
 	
-	private void convertJson(String json) {
-		JSONArray obj = null;
-		try {
-			obj = new JSONArray(json);
-		} catch (JSONException e2) {
-			e2.printStackTrace();
+	private class Drawer implements Runnable {
+
+		@Override
+		public void run() {
+			boolean lineExists = false;
+			for (Bubble b : listOfBubbles) {
+				bubbleView.addView(b);
+				for (Integer i : b.getConnected()) {
+					Bubble newB = getBubbleById(i);
+					Log.d("nappkin",b.toString());
+					Log.d("nappkin",newB.toString());
+					Line line = new Line(getApplicationContext(), b, newB);
+					for (Line existing : listOfLines) {
+						if ((existing.getStartBubble().getId() == b.getId() && existing.getEndBubble().getId() == newB.getId() ) 
+								|| (existing.getStartBubble().getId() == newB.getId() && existing.getEndBubble().getId() == b.getId() )) {
+							lineExists = true;
+						}
+					}
+					if (!lineExists) {
+						Log.d("nappkin","ADDING LINE");
+						listOfLines.add(line);
+						lineView.addView(line);
+					}
+				}
+			}
 		}
-		try {
-			map = new JSONObject(obj.getJSONObject(0).getString("json"));
-		} catch (JSONException e) {
-			e.printStackTrace();
+		
+	}
+	
+	private void convertJson(String json, boolean isArray) {
+		JSONArray obj = null;
+		if (isArray) {
+			try {
+				obj = new JSONArray(json);
+			} catch (JSONException e2) {
+				e2.printStackTrace();
+			}
+			try {
+				map = new JSONObject(obj.getJSONObject(0).getString("json"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				map = new JSONObject(json);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 
 		try {
@@ -522,7 +567,7 @@ public class NappkinActivity extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			Log.d("nappkin",result);
-			convertJson(result);
+			convertJson(result,true);
 			boolean lineExists = false;
 			for (Bubble b : listOfBubbles) {
 				bubbleView.addView(b);
