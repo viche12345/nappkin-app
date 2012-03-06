@@ -374,6 +374,7 @@ public class NappkinActivity extends Activity {
 			OSCListener listener = new OSCListener() {
 				public void acceptMessage(java.util.Date time,
 						OSCMessage message) {
+					Log.d("OSCMESSAGE",(String)message.getArguments()[0]);
 					try {
 						JSONObject rMap = new JSONObject((String)message.getArguments()[0]);
 						if(rMap.getString("id").equals(mapId)){
