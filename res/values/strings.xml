@@ -12,5 +12,8 @@
     <string name="newbutton">+</string>
     <string name="button">New button</string>
     <string name="list">-></string>
+    <string name="menu_share">SHARE with others</string>
+    <string name="menu_more">More Napkins</string>
+    <string name="add_user">Add User</string>
 
 </resources>

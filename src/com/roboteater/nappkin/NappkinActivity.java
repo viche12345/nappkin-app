@@ -1,15 +1,20 @@
 package com.roboteater.nappkin;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeSet;
-
-//import net.sf.json.JSONSerializer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,12 +73,17 @@ public class NappkinActivity extends Activity {
 	boolean registered = false;
 	
 	private int mapId = 0;
+	private boolean mapExistsInDB;
 	
 	private boolean updatingBubble;
 	
 	private OSCPortOut sender = null;
 	private OSCPortIn receiver = null;
 	private Object args[] = new Object[1];
+	
+	private Timer t = new Timer();
+	
+	private static URL conn = null;
 	
     /** Called when the activity is first created. */
     @Override
@@ -112,8 +122,36 @@ public class NappkinActivity extends Activity {
 			}
 		});
         
-        mapId = gen.nextInt(Integer.MAX_VALUE);
-        new Update().execute(null, "newmap");
+        mapExistsInDB = false;
+        if (getIntent().hasExtra("mapId")) {
+        	mapId = getIntent().getExtras().getInt("mapId");
+        	mapExistsInDB = true;
+        } else {
+        	mapId = gen.nextInt(Integer.MAX_VALUE);
+        	mapExistsInDB = false;
+        }
+        
+        Log.d("nappkin",mapId+"");
+        
+        if (!mapExistsInDB) {
+        	new Update().execute(null, "newmap");
+        	t.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				String possibleEmail = "";
+			       Account[] accounts = AccountManager.get(NappkinActivity.this).getAccounts();
+			       for (Account account : accounts) {
+			         if (account.name.contains("@")) {
+			             possibleEmail = account.name;
+			         }
+			       }
+				new Update().execute(mapId+"","adduser",possibleEmail);
+			}
+		}, 1000);
+        } else {
+        	new Fetch().execute(mapId+"");
+        }
     }
    
 
@@ -197,6 +235,16 @@ public class NappkinActivity extends Activity {
 				selectedBubble = null;
 			}
 			else Toast.makeText(this, "Click on an idea first!", Toast.LENGTH_LONG).show();
+			return true;
+		case R.id.menu_share:
+			new Update().execute(null, "update");
+			Intent i2 = new Intent(getApplicationContext(), AddUserActivity.class);
+			i2.putExtra("mapId", mapId);
+			startActivity(i2);
+			return true;
+		case R.id.menu_more:
+			Intent i = new Intent(getApplicationContext(), MapListActivity.class);
+			startActivity(i);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -324,123 +372,10 @@ public class NappkinActivity extends Activity {
 			}
 			
 			OSCListener listener = new OSCListener() {
-				public void acceptMessage(java.util.Date time, OSCMessage message) {
+				public void acceptMessage(java.util.Date time,
+						OSCMessage message) {
+
 					
-				
-					try {
-						map = new JSONObject((String) message.getArguments()[0]);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				    
-						try{
-							mapId = map.getInt("id");
-						}
-						catch(JSONException e)
-						{
-							e.printStackTrace();
-						}
-				       try {
-						String name = map.getString("name");
-						
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				       JSONArray bubbleArray = null;
-					try {
-						bubbleArray = map.getJSONArray("bubbles");
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				       listOfBubbles.clear();
-
-				       for(int i = 0; i<bubbleArray.length(); i++)
-				       {
-
-
-				    	   JSONObject jb = null;
-						try {
-							jb = (JSONObject) bubbleArray.get(i);
-						} catch (JSONException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-
-				    	   int bubID= -1;
-						try {
-							bubID = jb.getInt("id");
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-				    	   int x = -1;
-						try {
-							x = (jb.getInt("x"));
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-				    	   int y = -1;
-						try {
-							y = jb.getInt("y");
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-				    	   Bubble b = new Bubble(getApplicationContext(), x, y, bubID);
-
-				    	   try {
-							b.setUser((String) jb.get("user"));
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-				    	   try {
-							b.setText((String) jb.get("text"));
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-				    	   Set<Integer> connected = new TreeSet<Integer>();
-
-
-				    	   JSONArray conn = null;
-						try {
-							conn = jb.getJSONArray("connected");
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-				    	   for(int j = 0; j<conn.length(); j++)
-
-				    	   {
-
-				               int connid = 0;
-							try {
-								connid = ((JSONObject)(conn.get(j))).getInt("id");
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-				               connected.add(connid);
-
-				    	   }
-
-				    	   b.setConnected(connected);
-
-				    	   listOfBubbles.add(b);
-
-				       }
 				}
 			};
 			receiver.addListener("/nappkinResponse", listener);
@@ -449,6 +384,175 @@ public class NappkinActivity extends Activity {
 			return null;
 		}
 		
+	}
+	
+	private void convertJson(String json) {
+		JSONArray obj = null;
+		try {
+			obj = new JSONArray(json);
+		} catch (JSONException e2) {
+			e2.printStackTrace();
+		}
+		try {
+			map = new JSONObject(obj.getJSONObject(0).getString("json"));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			mapId = map.getInt("id");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		/*try {
+			String name = map.getString("name");
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}*/
+		JSONArray bubbleArray = null;
+		try {
+			bubbleArray = map.getJSONArray("Bubbles");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		listOfBubbles.clear();
+		listOfLines.clear();
+		for (int i = 0; i < bubbleArray.length(); i++) {
+
+			JSONObject jb = null;
+			try {
+				jb = (JSONObject) bubbleArray.get(i);
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+
+			int bubID = -1;
+			try {
+				bubID = jb.getInt("id");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			int x = -1;
+			try {
+				x = (jb.getInt("x"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			int y = -1;
+			try {
+				y = jb.getInt("y");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			Bubble b = new Bubble(getApplicationContext(), x, y,
+					bubID);
+
+			try {
+				b.setUser((String) jb.get("user"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				b.setText((String) jb.get("text"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			Set<Integer> connected = new TreeSet<Integer>();
+
+			JSONArray conn = null;
+			try {
+				conn = jb.getJSONArray("connected");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			for (int j = 0; j < conn.length(); j++)
+
+			{
+
+				int connid = 0;
+				try {
+					connid = ((JSONObject) (conn.get(j)))
+							.getInt("id");
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+				connected.add(connid);
+
+			}
+
+			b.setConnected(connected);
+
+			listOfBubbles.add(b);
+			Log.d("nappkin",listOfBubbles.get(0).getText());
+		}
+	}
+	
+	private class Fetch extends AsyncTask<String, Void, String> {
+
+		@Override
+		protected String doInBackground(String... params) {
+			try {
+				conn = new URL("http://team8.appjam.roboteater.com/index.php?mode=map&id=" + params[0]);
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			Log.d("nappkin",params[0]);
+			
+			BufferedReader in;
+			String inputLine = "";
+			try {
+				in = new BufferedReader(
+				        new InputStreamReader(conn.openStream()));
+				inputLine = in.readLine();
+		        in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return inputLine;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			Log.d("nappkin",result);
+			convertJson(result);
+			boolean lineExists = false;
+			for (Bubble b : listOfBubbles) {
+				bubbleView.addView(b);
+				for (Integer i : b.getConnected()) {
+					Bubble newB = getBubbleById(i);
+					Log.d("nappkin",b.toString());
+					Log.d("nappkin",newB.toString());
+					Line line = new Line(getApplicationContext(), b, newB);
+					for (Line existing : listOfLines) {
+						if ((existing.getStartBubble().getId() == b.getId() && existing.getEndBubble().getId() == newB.getId() ) 
+								|| (existing.getStartBubble().getId() == newB.getId() && existing.getEndBubble().getId() == b.getId() )) {
+							lineExists = true;
+						}
+					}
+					if (!lineExists) {
+						Log.d("nappkin","ADDING LINE");
+						listOfLines.add(line);
+						lineView.addView(line);
+					}
+				}
+			}
+		}
+		
+	}
+	
+	private Bubble getBubbleById(int id) {
+		for (Bubble b : listOfBubbles) {
+			if (b.getId() == id) return b;
+		}
+		return null;
 	}
 
 	class MyGestureDetector extends SimpleOnGestureListener {
@@ -524,7 +628,7 @@ public class NappkinActivity extends Activity {
 				float distanceX, float distanceY) {
 			if (draggingBubble) {
 				updatingBubble = true;
-				selectedBubble.shift((int)-distanceX, (int)-distanceY);
+				selectedBubble.updateStartingCoords((int)-distanceX, (int)-distanceY);
 			}
 			else {
 				for (Bubble circ : listOfBubbles) {

@@ -23,7 +23,8 @@
 	        android:layout_height="50dp"
 	        android:background="@null"
 	        android:text="@string/list"
-	        android:textSize="18dp" >
+	        android:textSize="18dp"
+	        android:visibility="gone" >
     </Button>
 		
     </RelativeLayout>
