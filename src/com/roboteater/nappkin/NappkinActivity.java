@@ -336,6 +336,7 @@ public class NappkinActivity extends Activity {
 				    
 				       try {
 						String name = map.getString("name");
+						
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
