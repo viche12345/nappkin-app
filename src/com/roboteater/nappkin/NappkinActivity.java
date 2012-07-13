@@ -366,7 +366,8 @@ public class NappkinActivity extends Activity {
 		@Override
 		protected Void doInBackground(Void... arg0) {
 			try {
-				sender = new OSCPortOut(InetAddress.getByName("team8.appjam.roboteater.com"));
+				//TODO: CHANGE THIS IP
+				sender = new OSCPortOut(InetAddress.getByName("169.234.22.158"));
 				receiver = new OSCPortIn(OSCPort.defaultSCOSCPort()+5);
 			} catch (UnknownHostException e1) {
 				e1.printStackTrace();
@@ -558,7 +559,9 @@ public class NappkinActivity extends Activity {
 		@Override
 		protected String doInBackground(String... params) {
 			try {
-				conn = new URL("http://team8.appjam.roboteater.com/index.php?mode=map&id=" + params[0]);
+				//conn = new URL("http://team8.appjam.roboteater.com/index.php?mode=map&id=" + params[0]);
+				//TODO: CHANGE THIS IP
+				conn = new URL("http://169.234.22.158/index.php?mode=map&id=" + params[0]);
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}

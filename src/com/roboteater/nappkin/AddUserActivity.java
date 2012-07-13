@@ -47,7 +47,8 @@ public class AddUserActivity extends Activity {
 		@Override
 		protected Void doInBackground(String... params) {
 			try {
-				sender = new OSCPortOut(InetAddress.getByName("team8.appjam.roboteater.com"));
+				//TODO: CHANGE THIS IP
+				sender = new OSCPortOut(InetAddress.getByName("169.234.22.158"));
 			} catch (SocketException e2) {
 				e2.printStackTrace();
 			} catch (UnknownHostException e2) {
