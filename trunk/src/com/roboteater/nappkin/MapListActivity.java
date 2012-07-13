@@ -50,7 +50,9 @@ public class MapListActivity extends Activity {
 		protected String doInBackground(String... params) {
 			if (conn == null) {
 				try {
-					conn = new URL("http://team8.appjam.roboteater.com/index.php?mode=list&email=" + params[0]);
+					//TODO: CHANGE THIS IP
+					//conn = new URL("http://team8.appjam.roboteater.com/index.php?mode=list&email=" + params[0]);
+					conn = new URL("http://169.234.22.158/index.php?mode=list&email=" + params[0]);
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				}
